@@ -1,0 +1,57 @@
+[color]
+	ui = true
+[core]
+	editor = code --wait
+	excludesfile = ~/.gitignore
+[credential]
+	helper = store
+[filter "lfs"]
+	clean = git-lfs clean %f
+	smudge = git-lfs smudge %f
+	required = true
+	helper = cache --timeout=3600
+
+[diff]
+    tool = default-difftool
+[difftool "default-difftool"]
+    cmd = code --wait --diff $LOCAL $REMOTE
+
+[mergetool "kdiff3"]
+    path = /usr/bin/kdiff3
+    trustExitCode = false
+[mergetool]
+    keepBackup = false
+[merge]
+    tool = kdiff3
+
+[push]
+	default = current
+[user]
+	name = Nicolas Roy
+	email = niroy@microsoft.com
+[help]
+	autoCorrect = -1
+[log]
+	abbrevCommit = true
+	decorate = short
+[apply]
+	ignoreWhitespace = change
+[am]
+	threeWay = true
+[rerere]
+	enabled = true
+	autoUpdate = true
+[alias]
+	co = checkout
+	ci = commit
+	st = status
+	br = branch
+	hist = log --pretty=format:\"%h %ad | %s%d [%an]\" --graph --date=short
+	refs = for-each-ref --sort=committerdate refs/heads/ --format='%(committerdate:short) %(refname:short) :: %(subject)'
+	co-master = !git checkout master && git submodule foreach git checkout master
+	lol = log --oneline --graph
+	nuke = !git clean -fdx && git submodule foreach git clean -fdx
+	sub-status = !git submodule foreach git status
+	sync-subs = !git pull && git remote prune origin && git submodule foreach git pull && git submodule foreach git remote prune origin
+	rmrbranch = push origin --delete  # <Branch-name> supplied by user
+	rmrprune = remote prune origin

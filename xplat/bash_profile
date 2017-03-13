@@ -1,0 +1,114 @@
+# set -x -e
+
+#export EDITOR=/usr/bin/mcedit
+
+test -s ~/.alias && . ~/.alias || true
+
+if [ -e ~/.colors ]; then
+    source ~/.colors
+else
+    >&2 echo "Missing .colors file"
+fi
+PS1="\\n\[${Blue}\]\u\[${Color_Off}\]@\[${Green}\]\h\[${Color_Off}\]:\W>"
+#PS1="\u@\h:\W>"
+#
+# Set up common aliases and enviornment variables
+#
+alias ip4="ip -4 -o addr | grep eth | grep -Po \"([0-9]{1,3}\.){3}[0-9]{1,3}\" | head -n 1"
+alias scope="cscope -d"
+alias ssh="ssh -XA"
+alias pbuild="python ~/git/pbuild/pbuild.py"
+alias debugbash="PS4='Line \${LINENO}: ' bash -x"
+alias recursivetouch="find . -exec touch {} \;"
+alias mount-ostcdata="sudo mkdir /mnt/ostcdata; sudo mount -o vers=3 ostcrrhv02:/ostcdata /mnt/ostcdata"
+alias openssl-scx="openssl x509 -noout -in /etc/opt/microsoft/scx/ssl/scx.pem -subject -issuer"
+alias file_manager="nautilus --no-desktop"
+
+# Append history instead of rewriting it
+shopt -s histappend
+# Allow a larger history file
+HISTFILESIZE=1000000
+HISTSIZE=1000000
+# Ignore commands starting with space and dups
+HISTCONTROL=ignoreboth
+# Ignore common commands
+HISTIGNORE='ls:bg:fg:history'
+# Save timestamps
+HISTTIMEFORMAT='%Y-%m-%d %H:%M:%S  '
+# Use one command per line
+shopt -s cmdhist
+# Store history immediately
+PROMPT_COMMAND='history -a'
+
+export LESS_TERMCAP_mb=$'\E[01;31m'
+export LESS_TERMCAP_md=$'\E[01;31m'
+export LESS_TERMCAP_me=$'\E[0m'
+export LESS_TERMCAP_se=$'\E[0m'
+export LESS_TERMCAP_so=$'\E[01;44;33m'
+export LESS_TERMCAP_ue=$'\E[0m'
+export LESS_TERMCAP_us=$'\E[01;32m'
+
+extract ()
+{
+    if [ -f $1 ] ; then
+        case $1 in
+            *.tar.bz2)   tar xvjf $1    ;;
+            *.tar.gz)    tar xvzf $1    ;;
+            *.bz2)       bunzip2 $1     ;;
+            *.rar)       unrar x $1       ;;
+            *.gz)        gunzip $1      ;;
+            *.tar)       tar xvf $1     ;;
+            *.tbz2)      tar xvjf $1    ;;
+            *.tgz)       tar xvzf $1    ;;
+            *.zip)       unzip $1       ;;
+            *.Z)         uncompress $1  ;;
+            *.7z)        7z x $1        ;;
+            *)           echo "don't know how to extract '$1'..." ;;
+        esac
+    else
+        echo "'$1' is not a valid file!"
+    fi
+}
+
+# Some systems have less, some don't - if we don't, just use more
+
+if ( type less > /dev/null 2>&1 ); then
+    export LESS="-Imsr"
+    export PAGER="less"
+else
+    alias less="more"
+    export MORE="-is"
+fi
+
+# For 'ls', use colors if we have them (and use LS_OPTIONS if it exists)
+
+if [ $(uname -s) = "Linux" -a -f /etc/SuSE-release ]; then
+    if [ "${LS_OPTIONS}" != "" ]; then
+        export LS_OPTIONS="${LS_OPTIONS} -p"
+    else
+        alias ls="ls -N --color=tty -T 0 -p"
+    fi
+else
+    alias ls="ls -p --color=always"
+fi
+
+ls > /dev/null 2>&1;
+if [ "$?" -ne 0 ]; then
+    #Broke something : play safe
+    alias ls="ls -p"
+fi
+
+git_prompt()
+{
+    if which git > /dev/null 2>&1; then
+        [ ! -d ~/.bash-git-prompt ] && git clone git@github.com:magicmonty/bash-git-prompt.git ~/.bash-git-prompt
+        source ~/.bash-git-prompt/gitprompt.sh
+    fi
+}
+
+# Save path so, if we re-run ourselves, the path doesn't get needlessly long
+if [ "${SAVED_PATH:-==Unset==}" = "==Unset==" ]; then
+    export SAVED_PATH="${PATH}"
+else
+    export PATH="${SAVED_PATH}"
+fi
