@@ -23,3 +23,6 @@ choco install sourcecodepro #Font
 # choco install veracrypt
 # choco install wincommandpaste
 # choco install mtputty
+
+
+# code --install-extension dbaeumer.vscode-eslint
